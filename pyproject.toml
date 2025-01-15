@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="frustraevo"
+authors = [
+]
+description="A Tool To Study Energetic Patterns in Protein Families"
+readme = "README.md"
+requires-python = ">=3.9"
+
+classifiers=[
+    "Programming Language :: Python :: 3",
+]
+license = {file = "LICENSE.txt"}
+dynamic = ["version"]
+dependencies = ["pandas",
+                "numpy",
+                "biopython",
+]
+
+[project.optional-dependencies]
+test = ["pytest >=7.4.2", 
+        "pytest-datadir~=1.4.1"]
+
+[project.urls]
+Bug_Tracker = "https://github.com/proteinphysiologylab/FrustraEvo/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[project.scripts]
+"frustraevo_run_logo.py" = "frustraevo:run_logo._entrypoint"
+

@@ -6,7 +6,7 @@ import time
 start_time = time.time()
 
 sys.path.append('')#Path to Functions.py file
-import Functions
+import frustraevo.Functions as Functions
 import argparse
 
 parser = argparse.ArgumentParser(description='Calculation of the frustration logo.')
