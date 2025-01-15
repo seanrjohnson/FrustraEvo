@@ -42,14 +42,17 @@ def main(argv):
     logger.basicFonfig(filename=out_dir/"log.txt")
         #the parameter Scripts is the path to the .r and .py files for plots
     logger.info('Copying files for Frustration Logo')
-    Functions.copyfiles(out_dir, RPath, args.pdb_db)
+    Functions.setup_outdir(out_dir)
     
-    list_file=Functions.pdb_list(args.fasta)
+    list_file =  out_dir / "prot_names.txt"
+    Functions.pdb_list(args.fasta, list_file)
     
     logger.info('Changes in MSA Frustration Logo')
-    Functions.changes(args.JobId, args.fasta)
+    Functions.changes(out_dir, args.fasta)
+    
     logger.info('Running Checks in sequence')
-    Functions.checks_seq(list_file,args.JobId, args.pdb_db)
+    Functions.checks_seq(list_file, out_dir, args.pdb_db)
+    
     path_file='FrustraEvo_'+args.JobId+'/ErrorSeq.log'
     logger.info(' Reading and Preparing Files...')
     
