@@ -30,6 +30,10 @@ Bug_Tracker = "https://github.com/proteinphysiologylab/FrustraEvo/issues"
 [tool.setuptools]
 package-dir = {"" = "src"}
 
+[tool.setuptools.dynamic]
+version = {attr = "frustraevo.__version__"}
+
+
 [project.scripts]
 "frustraevo_run_logo.py" = "frustraevo:run_logo._entrypoint"
 
