@@ -51,7 +51,7 @@ def main(argv):
     Functions.changes(out_dir, args.fasta)
     
     logger.info('Running Checks in sequence')
-    Functions.checks_seq(list_file, out_dir, args.pdb_db)
+    Functions.checks_seq(out_dir, args.pdb_db)
     
     path_file='FrustraEvo_'+args.JobId+'/ErrorSeq.log'
     logger.info(' Reading and Preparing Files...')

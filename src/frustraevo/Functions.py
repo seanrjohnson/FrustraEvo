@@ -138,12 +138,12 @@ def obtain_seq(pdbid, out_dir):
 	pdb.close()
 	return seq
 
-def checks_seq(list_pdbs, out_dir, pathPDB='None'):
+def checks_seq(out_dir, pathPDB=None):
 	path_direc=Path(out_dir)
 	seqs=0
-	frustdir=path_direc+'/Frustration/'
-	MSA=open(path_direc+'/MSA_Clean_aux.fasta','r')
-	out=open(path_direc+'/MSA_Clean.fasta','w')
+	frustdir=path_direc / 'Frustration'
+	MSA=open(path_direc / 'MSA_Clean_aux.fasta','r')
+	out=open(path_direc / 'MSA_Clean.fasta','w')
 	#out_log=open(path_direc+'/ErrorSeq.log','w')
     #len_seq=0
 	for seq_record in SeqIO.parse(MSA, 'fasta'):
@@ -151,12 +151,14 @@ def checks_seq(list_pdbs, out_dir, pathPDB='None'):
 		seq=seq_record.seq.replace('-','')
 		seq_to_print=seq_record.seq
 		pathpdb=path_direc+'/Frustration/'+seqid+'.pdb'
-		pathdb=pathPDB+'/'+seqid+'.pdb'
+		
+        pathdb=pathPDB+'/'+seqid+'.pdb'
 		if not os.path.exists(pathdb):
-			os.system('cd '+frustdir+'/;wget \'http://www.rcsb.org/pdb/files/'+seqid+'.pdb\' -O '+JodID+'/Frustration/'+seqid+'.pdb')
+			os.system('cd '+frustdir+'/;wget \'http://www.rcsb.org/pdb/files/'+seqid+'.pdb\' -O '+ JodID +'/Frustration/'+seqid+'.pdb')
 		else:
 			os.system('cp '+pathPDB+'/'+seqid+'.pdb '+frustdir+'/'+seqid+'.pdb')
-		if os.path.exists(pathpdb):
+		
+        if os.path.exists(pathpdb):
 			seqpdb=obtain_seq(seqid,JodID)
 			if seq == seqpdb:
 				print('Sequence '+seqid+' checked')
