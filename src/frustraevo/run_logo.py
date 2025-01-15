@@ -1,99 +1,98 @@
 import os
 import sys
 import time
+import logging
+from pathlib import Path
 
 # Registra el tiempo de inicio
 start_time = time.time()
 
-sys.path.append('')#Path to Functions.py file
 import frustraevo.Functions as Functions
 import argparse
 
-parser = argparse.ArgumentParser(description='Calculation of the frustration logo.')
-parser.add_argument("--JobId", help="The name of the job")
-parser.add_argument("--RPath", default='Scripts', help="Path to R script files (Default: Scripts)")
-parser.add_argument("--fasta", help="Name of the fasta")
-parser.add_argument("--ref", default='None', help="Id of the reference protein of your logo (Default: None)")
-parser.add_argument("--pdb_db", default='None', help="Path to the PDBs folder (Default: None)")
-parser.add_argument("--cmaps", default='None', help="Put 'yes' for contactmaps calculation (Default: None)")
+logger = logging.getLogger(__name__)
 
+def main(argv):
 
-#How to run the pipeline in linux terminal:
-#python run_logo.py JobId RPath fasta list_file ref pdb_db 
+    parser = argparse.ArgumentParser(description='Calculation of the frustration logo.')
+    parser.add_argument("--JobId", help="The name of the job")
+    parser.add_argument("-o", help="path to the output directory. (should not exist before running the script)")
+    #parser.add_argument("--RPath", default='N', help="Path to R script files (Default: Scripts)")
+    parser.add_argument("--fasta", help="Name of the fasta")
+    parser.add_argument("--ref", default='None', help="Id of the reference protein of your logo (Default: None)")
+    parser.add_argument("--pdb_db", default='None', help="Path to the PDBs folder (Default: None)")
+    parser.add_argument("--cmaps", default=False, action="store_true", help="Set to activate contact maps calculation")
+    
 
-args = parser.parse_args()
-list_file=''
+    #How to run the pipeline in linux terminal:
+    #python run_logo.py JobId RPath fasta list_file ref pdb_db 
 
-#out_log=open('FrustraEvo_'+args.JobId+'/CheckPoints_FE','w')
-#the parameter Scripts is the path to the .r and .py files for plots
-seq=0
-#out_log.write('Copyng files for Frustration Logo\n')
-Functions.copyfiles(args.JobId,args.RPath,args.pdb_db)
-list_file=Functions.pdb_list(args.fasta)
-#out_log.write('Changes in MSA Frustration Logo\n')
-Functions.changes(args.JobId,args.fasta)
-#out_log.write('Running Checks in sequence\n')
-Functions.checks_seq(list_file,args.JobId,args.pdb_db)
-path_file='FrustraEvo_'+args.JobId+'/ErrorSeq.log'
-out_log=open('results/CheckPoints_FE','a')
-out_log.write(' Reading and Preparing Files...\n')
-out_log.close()
-if not os.path.exists(path_file):
-  out_log=open('results/CheckPoints_FE','a')
-  out_log.write(' Calculating Single Residue Frustration Index...\n')
-  out_log.close()
-  Functions.FrustraPDB(list_file,args.JobId,args.pdb_db)
-  out_log=open('results/CheckPoints_FE','a')
-  out_log.write(' Running Internal Checks...\n')
-  out_log.close()
-  Functions.checks(args.JobId)
-  out_log=open('results/CheckPoints_FE','a')
-  out_log.write(' Preparing MSA Files...\n')
-  out_log.close()
-  Functions.prepare_file(args.JobId,args.ref)
-  Functions.FinalAlign(args.JobId)
-#  out_log=open('results/CheckPoints_FE','a')
-#  out_log.write('Running Equivalences...\n')
-#  out_log.close()
-  Functions.Equivalences(args.JobId)
-  out_log=open('results/CheckPoints_FE','a')
-  out_log.write(' Calculating SeqIC and FrustIC...\n')
-  out_log.close()
-  Functions.FastaMod(args.JobId)
-#  out_log=open('results/CheckPoints_FE','a')
-#  out_log.write('Running Checks\n')
-#  out_log.close()
-  Functions.LogoCheck(args.JobId)
-  out_log=open('results/CheckPoints_FE','a')
-  out_log.write(' Generating Sequence and Frustration Logos Plots...\n')
-  out_log.close()
-  Functions.plots_logo(args.JobId,args.ref,args.RPath) 
-  if args.cmaps == 'yes':
-        out_log=open('results/CheckPoints_FE','a')
-        out_log.write(' Calculating Mutational Frustration Index and Contact Maps...\n')
-        out_log.close()
-        Functions.CMaps_Mutational(args.JobId,args.RPath,args.ref)#Genera los mapas de contacto para el indice mutational
-        out_log=open('results/CheckPoints_FE','a')
-        out_log.write(' Calculating Configurational Frustration Index and Contact Maps...\n')
-        out_log.close()
-        Functions.CMaps_Configurational(args.JobId,args.RPath,args.ref)#Genera los mapas de contacto para el indice configurational
-  Functions.clean_files(args.JobId,args.RPath,args.ref)  
-  end_time = time.time()
-  elapsed_time = end_time - start_time
-#path_direc='FrustraEvo_'+args.JobId
-#out=open(path_direc+'/'+JodID+'.log','w')
-#out.write(str(elapsed_time)+'\n')
-#out.close()
-  out_log=open('results/CheckPoints_FE','a')
-  out_log.write(' Generating Output Files...\n')
-  out_log.close()
-  Functions.VScript(args.JobId,elapsed_time)
-  os.system('cd '+args.RPath+';python3 setup_render.py '+args.JobId+' SingleRes')
-  os.system('cd '+args.RPath+';python3 Seq_IC.py '+args.JobId)
-#contact_maps.py	
-  os.system('cd '+args.RPath+';python3 contact_maps.py '+args.JobId+' '+args.ref+' IC_SingleRes_'+args.JobId+' IC_Mut_'+args.JobId+' IC_Conf_'+args.JobId)
+    args = parser.parse_args(argv)
+    list_file=''
 
-out_log=open('results/CheckPoints_FE','a')
-out_log.write(' Job finished')
-out_log.close()
+    out_dir = Path(args.o)
 
+    RPath = Path(__file__).parent / "Scripts"
+
+    if out_dir.exists():
+        raise ValueError(f"Output directory {out_dir} already exists. Please remove it before running the script.")
+    
+    out_dir.mkdir()
+
+    logger.basicFonfig(filename=out_dir/"log.txt")
+        #the parameter Scripts is the path to the .r and .py files for plots
+    logger.info('Copying files for Frustration Logo')
+    Functions.copyfiles(out_dir, RPath, args.pdb_db)
+    
+    list_file=Functions.pdb_list(args.fasta)
+    
+    logger.info('Changes in MSA Frustration Logo')
+    Functions.changes(args.JobId, args.fasta)
+    logger.info('Running Checks in sequence')
+    Functions.checks_seq(list_file,args.JobId, args.pdb_db)
+    path_file='FrustraEvo_'+args.JobId+'/ErrorSeq.log'
+    logger.info(' Reading and Preparing Files...')
+    
+    if not os.path.exists(path_file):
+        logger.info(' Calculating Single Residue Frustration Index...')
+        Functions.FrustraPDB(list_file,args.JobId,args.pdb_db)
+        logger.info(' Running Internal Checks...')
+
+        Functions.checks(args.JobId)
+        logger.info('Preparing MSA Files...')
+        
+        Functions.prepare_file(args.JobId,args.ref)
+        Functions.FinalAlign(args.JobId)
+        logger.info('Running Equivalences...')
+        
+        Functions.Equivalences(args.JobId)
+        logger.info("Calculating SeqIC and FrustIC...")
+        Functions.FastaMod(args.JobId)
+        logger.info("Running Checks")
+        Functions.LogoCheck(args.JobId)
+        logger.info('Generating Sequence and Frustration Logos Plots...')
+        Functions.plots_logo(args.JobId,args.ref,args.RPath) 
+        
+        if args.cmaps:
+            logger.info('Calculating Mutational Frustration Index and Contact Maps...')
+            Functions.CMaps_Mutational(args.JobId,args.RPath,args.ref)#Genera los mapas de contacto para el indice mutational
+            logger.info("Calculating Configurational Frustration Index and Contact Maps...")
+            Functions.CMaps_Configurational(args.JobId,args.RPath,args.ref)#Genera los mapas de contacto para el indice configurational
+        Functions.clean_files(args.JobId,args.RPath,args.ref)    
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logger.info(f"Elapsed time: {elapsed_time}")
+        logger.info(f"Generating Output Files...")
+        Functions.VScript(args.JobId,elapsed_time)
+        os.system('cd '+args.RPath+';python3 setup_render.py '+args.JobId+' SingleRes')
+        os.system('cd '+args.RPath+';python3 Seq_IC.py '+args.JobId)
+    #contact_maps.py	
+        os.system('cd '+args.RPath+';python3 contact_maps.py '+args.JobId+' '+args.ref+' IC_SingleRes_'+args.JobId+' IC_Mut_'+args.JobId+' IC_Conf_'+args.JobId)
+
+        logger.info("Job finished")
+
+if __name__ == "__main__":
+        main(sys.argv[1:])
+
+def _entrypoint():
+        main(sys.argv[1:])
